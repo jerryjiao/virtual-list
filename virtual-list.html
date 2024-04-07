@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>虚拟滚动示例</title>
+  <style>
+    .container {
+      height: 400px;
+      overflow-y: auto;
+    }
+    .list-item {
+      height: 50px;
+      line-height: 50px;
+      padding: 0 20px;
+      border-bottom: 1px solid #ccc;
+    }
+    .virtual-list-placeholder {
+      height: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="virtual-list-placeholder"></div>
+    <div id="virtual-list"></div>
+  </div>
+
+  <script>
+    // 生成模拟数据
+    function generateData(count) {
+      const data = [];
+      for (let i = 0; i < count; i++) {
+        data.push(`Item ${i + 1}`);
+      }
+      return data;
+    }
+
+    // 初始化列表数据
+    const listData = generateData(1000);
+
+    // 获取列表容器元素
+    const container = document.querySelector('.container');
+    const virtualList = document.getElementById('virtual-list');
+    const virtualListPlaceholder = document.querySelector('.virtual-list-placeholder');
+
+    // 获取列表项的高度
+    function getItemHeight() {
+      const item = document.createElement('div');
+      item.className = 'list-item';
+      virtualList.appendChild(item);
+      const height = item.offsetHeight;
+      virtualList.removeChild(item);
+      return height;
+    }
+
+    // 获取列表项的高度
+    const itemHeight = getItemHeight();
+
+    // 计算可见区域内可显示的项目数
+    function getVisibleItemCount() {
+      const containerHeight = container.clientHeight;
+      return Math.ceil(containerHeight / itemHeight);
+    }
+
+    // 获取可见区域内可显示的项目数
+    const visibleItemCount = getVisibleItemCount();
+
+    // 设置占位元素的高度
+    virtualListPlaceholder.style.height = `${listData.length * itemHeight}px`;
+
+    // 渲染列表项
+    function renderListItems(startIndex, endIndex) {
+      let html = '';
+      for (let i = startIndex; i <= endIndex; i++) {
+        html += `<div class="list-item">${listData[i]}</div>`;
+      }
+      virtualList.innerHTML = html;
+      virtualList.style.transform = `translateY(${startIndex * itemHeight}px)`;
+    }
+
+    // 初始渲染可见区域内的项目
+    renderListItems(0, visibleItemCount - 1);
+
+    // 监听滚动事件
+    container.addEventListener('scroll', function() {
+      const scrollTop = container.scrollTop;
+      const startIndex = Math.floor(scrollTop / itemHeight);
+      const endIndex = startIndex + visibleItemCount - 1;
+      renderListItems(startIndex, endIndex);
+    });
+  </script>
+</body>
+</html>
